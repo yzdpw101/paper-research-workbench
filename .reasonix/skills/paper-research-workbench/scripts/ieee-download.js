@@ -33,16 +33,20 @@ const stampPDF = 'https://ieeexplore.ieee.org/stampPDF/getPDF.jsp?tp=&arnumber='
 
   const { browser, page } = await launch();
 
-  // Quick login check
-  await page.goto('https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=test', {
-    waitUntil: 'domcontentloaded', timeout: 15000
-  });
-  await page.waitForTimeout(2000);
-  const loginOk = await page.evaluate(() => {
-    const t = (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 8000);
-    return /\bSign Out\b/i.test(t) || /Access provided by/i.test(t);
-  });
-  if (!loginOk) { console.log(JSON.stringify({ error: 'not logged in' })); await browser.close(); return; }
+  // Quick login check (non-blocking — skip if slow)
+  try {
+    await page.goto('https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=test', {
+      waitUntil: 'domcontentloaded', timeout: 10000
+    });
+    await page.waitForTimeout(2000);
+    const loginOk = await page.evaluate(() => {
+      const t = (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 8000);
+      return /\bSign Out\b/i.test(t) || /Access provided by/i.test(t);
+    });
+    if (!loginOk) { console.log(JSON.stringify({ error: 'not logged in' })); await browser.close(); return; }
+  } catch (_) {
+    // Login check timed out — proceed anyway; stampPDF will return error if really not logged in
+  }
 
   // Fetch PDF via context.request — bypass PDF viewer, works in any browser
   try {
@@ -59,7 +63,13 @@ const stampPDF = 'https://ieeexplore.ieee.org/stampPDF/getPDF.jsp?tp=&arnumber='
     const disp = resp.headers()['content-disposition'] || '';
     const fnMatch = disp.match(/filename[^;=\n]*=["']?([^"';\n]*)["']?/);
     const filename = fnMatch ? fnMatch[1] : 'paper-' + arnumber + '.pdf';
-    const dest = saveAsPath || path.join(DOWNLOAD_DIR, filename);
+    const dest = (() => {
+      if (!saveAsPath) return path.join(DOWNLOAD_DIR, filename);
+      // If target is a directory or has no extension, treat as dir + filename
+      if (fs.existsSync(saveAsPath) && fs.statSync(saveAsPath).isDirectory()) return path.join(saveAsPath, filename);
+      if (!path.extname(saveAsPath)) { fs.mkdirSync(saveAsPath, { recursive: true }); return path.join(saveAsPath, filename); }
+      return saveAsPath;
+    })();
     const destDir = path.dirname(dest);
     if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
 
