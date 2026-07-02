@@ -21,6 +21,7 @@ Use the smallest matching path. Do not read every reference file.
 | Wanfang 分章 | `wanfang/chapters.md` | `wf-chapter.js --q "..." --idx 0 --save-as "..."` |
 | Setup | `shared/setup.md` | ⚠️ `shared/.setup-done` 不存在 → **停止一切**，逐步引导 |
 | 切换浏览器 | `shared/setup.md` §切换默认浏览器 | `set-browser.js <firefox\|chrome\|edge>` |
+| 适配其他 Agent | `shared/cross-agent.md` | 路径替换 + 前提条件 |
 | 临时换浏览器 | 任意命令加 `--browser` | `ieee-search.js --browser chrome --q "..."` |
 
 > **IEEE 渐进式**：标题→摘要→详情→下载，每步按需。**万方一步到位**：搜索页已有完整信息。说"检索"不跳到下载。
