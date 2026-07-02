@@ -8,7 +8,7 @@
 node "${SKILL_DIR}/scripts/ff-setup.js" --dir "E:/Downloads/Firefox"
 ```
 
-幂等。输出 `FF_DOWNLOAD_DIR` 和 `FF_PROFILE_DIR`。
+幂等。输出 `BROWSER=...` 和 `DOWNLOAD_DIR=...`。
 
 ## 检索流程
 

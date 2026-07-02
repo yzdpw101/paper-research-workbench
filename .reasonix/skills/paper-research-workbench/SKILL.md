@@ -20,6 +20,8 @@ Use the smallest matching path. Do not read every reference file.
 | Wanfang 整篇下载 | `wanfang/search-download.md` | `wf-download.js --q "..." --type thesis --idx 0 --save-as "..."` |
 | Wanfang 分章 | `wanfang/chapters.md` | `wf-chapter.js --q "..." --idx 0 --save-as "..."` |
 | Setup | `shared/setup.md` | ⚠️ `shared/.setup-done` 不存在 → **停止一切**，逐步引导 |
+| 切换浏览器 | `shared/setup.md` §切换默认浏览器 | `set-browser.js <firefox\|chrome\|edge>` |
+| 临时换浏览器 | 任意命令加 `--browser` | `ieee-search.js --browser chrome --q "..."` |
 
 > **IEEE 渐进式**：标题→摘要→详情→下载，每步按需。**万方一步到位**：搜索页已有完整信息。说"检索"不跳到下载。
 
@@ -39,7 +41,8 @@ Skill (SKILL.md + platform docs)
 │  wf-chapter.js    Wanfang chapter download  │
 │  ff-eval.js       navigate + evaluate JSON  │
 │  ff-run.js        arbitrary page/context    │
-│  ff-setup.js      Firefox profile config    │
+│  ff-setup.js      verify + init browser     │
+│  set-browser.js    set default browser       │
 │  place_download.js                      │
 │  save_ieee_figures.py                   │
 │  save_ieee_pdf.py                       │
@@ -47,7 +50,8 @@ Skill (SKILL.md + platform docs)
                │  Playwright Node.js API
                ▼
 ┌─────────────────────────────────────────┐
-│  Firefox (storageState.json)           │
+│  Firefox / Chrome / Edge                 │
+│  (storageState-<browser>.json)           │
 │  C:/Users/Tel13/.paper-research-        │
 │  workbench/storageState.json            │
 │  Downloads → E:/Downloads/Firefox       │
@@ -59,12 +63,12 @@ Skill (SKILL.md + platform docs)
 | Old (Claude Code) | New (Reasonix) |
 |---|---|
 | Playwright MCP `browser_*` tools | `node scripts/ff-eval.js` / `ff-run.js` |
-| Chrome + CDP + Extension + Token | Firefox + `launchPersistentContext` |
+| Chrome + CDP + Extension + Token | Firefox/Chrome/Edge + `storageState` |
 | `browser_evaluate(function="...")` | `ff-eval.js --code-file /tmp/code.js` |
 | `browser_run_code_unsafe(async (page)=>{...})` | `ff-run.js --code-file /tmp/code.js` |
 | `browser_navigate(url)` + `browser_evaluate` | `ff-eval.js --url "..." --code-file /tmp/code.js` (combined) |
 | `browser_click [data-target="..."]` | `ff-run.js --code-file /tmp/code.js` (page.click inside) |
-| `chrome-preflight.ps1` → `CHROME_DIR` | `ff-setup.js` → `E:/Downloads/Firefox` |
+| `chrome-preflight.ps1` → `CHROME_DIR` | `ff-setup.js` + `set-browser.js` → `shared/.browser` |
 | `${SKILL_DIR}` | Same — Reasonix resolves via skill root |
 
 ## Hard rules
@@ -78,7 +82,7 @@ Skill (SKILL.md + platform docs)
 - **Wanfang login**: Merged evaluate 内置 login check。`logged=false` → `page.reload()` + 等 2s + 重跑（SPA 不自动感知 CARSI cookie），仍失败才 stop。
 - **Wanfang pagination**: URL `p=<N>` does NOT work (SPA resets to p=1). Use bottom-pagination clicks.
 - **Wanfang PDF**: 优先用 `wf-download.js --q "..." --type <type> --idx <n> --save-as <path>`。内置 thesis vs periodical 区分（thesis 等新标签+点击此处，periodical 直接下载）。
-- **Firefox preflight**: `ff-setup.js` 幂等。验证 profile + 下载目录。Download 通过 Playwright API 接管。
+- **Browser preflight**: `ff-setup.js` 幂等。验证 profile + 下载目录。`set-browser.js <browser>` 切换默认浏览器。`--browser <browser>` 临时覆盖。
 - **Wanfang buttons**: Use `data-target` attribute bridge: evaluate marks exact button → ff-run clicks `[data-target="wf-dl"]`. Thesis: 整篇下载 preferred; bare 下载 = login expired → 换一篇。
 - **Snapshots**: Prefer evaluate JSON on result pages (cheaper). `ref` 概念不适用（我们用文本 JSON 而非 accessibility tree）。
 - **Detail expiry**: If redirected to home after login, reopen saved detail URL.
