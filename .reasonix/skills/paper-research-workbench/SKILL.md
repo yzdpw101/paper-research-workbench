@@ -1,9 +1,9 @@
 ---
 name: paper-research-workbench
-description: Automate concrete IEEE Xplore or Wanfang paper search/download tasks with Playwright + Firefox (persistent profile). Use only for IEEE/Wanfang search, login-state checks, arnumber extraction, Wanfang result preview, PDF/ZIP download, or local PDF figure/text extraction. Do not use for general literature review, academic writing, or ordinary PDF reading unless platform automation or download is required.
+description: Automate IEEE Xplore or Wanfang paper search/download with Playwright (Firefox/Chrome/Edge). Use for IEEE/Wanfang search, login checks, metadata extraction, PDF/ZIP download, chapter download, or figure extraction. Do not use for general literature review or academic writing.
 ---
 
-# Paper Research Workbench (Reasonix + Firefox)
+# Paper Research Workbench
 
 ## Route first
 
@@ -34,15 +34,17 @@ Skill (SKILL.md + platform docs)
     ▼
 ┌─────────────────────────────────────────┐
 │  scripts/                               │
-│  ieee-search.js   IEEE search (built-in)   │
+│  ieee-search.js   IEEE search              │
+│  ieee-detail.js   IEEE metadata extraction  │
 │  ieee-download.js IEEE PDF download         │
-│  wf-search.js     Wanfang search (built-in) │
+│  ieee-figures.js  IEEE figure extraction    │
+│  wf-search.js     Wanfang search            │
 │  wf-download.js   Wanfang download          │
 │  wf-chapter.js    Wanfang chapter download  │
-│  ff-eval.js       navigate + evaluate JSON  │
-│  ff-run.js        arbitrary page/context    │
+│  ff-eval.js       generic evaluate (fallback)│
+│  ff-run.js        generic run (fallback)     │
 │  ff-setup.js      verify + init browser     │
-│  set-browser.js    set default browser       │
+│  set-browser.js   set default browser       │
 │  place_download.js                      │
 │  save_ieee_figures.py                   │
 │  save_ieee_pdf.py                       │
@@ -51,10 +53,9 @@ Skill (SKILL.md + platform docs)
                ▼
 ┌─────────────────────────────────────────┐
 │  Firefox / Chrome / Edge                 │
-│  (storageState-<browser>.json)           │
-│  C:/Users/Tel13/.paper-research-        │
-│  workbench/storageState.json            │
-│  Downloads → E:/Downloads/Firefox       │
+│  (~/.paper-research-workbench/            │
+│   storageState-<browser>.json)            │
+│  Downloads → E:/Downloads/Firefox         │
 └─────────────────────────────────────────┘
 ```
 
@@ -64,7 +65,7 @@ Skill (SKILL.md + platform docs)
 |---|---|
 | Playwright MCP `browser_*` tools | `node scripts/ff-eval.js` / `ff-run.js` |
 | Chrome + CDP + Extension + Token | Firefox / Chrome / Edge + `storageState` |
-| `browser_evaluate(function="...")` | `ff-eval.js --code-file /tmp/code.js` |
+| `browser_evaluate(function="...")` | `ieee-search.js` / `wf-search.js` 等专用脚本；`ff-eval.js --code-file` 作 fallback |
 | `browser_run_code_unsafe(async (page)=>{...})` | `ff-run.js --code-file /tmp/code.js` |
 | `browser_navigate(url)` + `browser_evaluate` | `ff-eval.js --url "..." --code-file /tmp/code.js` (combined) |
 | `browser_click [data-target="..."]` | `ff-run.js --code-file /tmp/code.js` (page.click inside) |
@@ -78,10 +79,10 @@ Skill (SKILL.md + platform docs)
 
 - **Login**: No auto-login. 搜索页、详情页、下载前都必须先跑 login check evaluate。未通过 → 停止并让用户登录。
 - **IEEE login**: 搜索页 + 详情页 + 下载前三次 login check。`Sign Out` > `Access provided by`，二者有一即 passed。
-- **IEEE PDF**: 优先用 `ieee-download.js --arnumber <n> --save-as <path>`。内置 login check + stream 下载。无权限时 evaluate 会检测到 `Purchase PDF` 并提前报错。
+- **IEEE PDF**: 用 `ieee-download.js --arnumber <n> --save-as <path>`。登录检查非阻塞（超时时直接尝试下载），下载用 `context.request.fetch()` 跨浏览器通用。
 - **Wanfang login**: Merged evaluate 内置 login check。`logged=false` → `page.reload()` + 等 2s + 重跑（SPA 不自动感知 CARSI cookie），仍失败才 stop。
 - **Wanfang pagination**: URL `p=<N>` does NOT work (SPA resets to p=1). Use bottom-pagination clicks.
-- **Wanfang PDF**: 优先用 `wf-download.js --q "..." --type <type> --idx <n> --save-as <path>`。内置 thesis vs periodical 区分（thesis 等新标签+点击此处，periodical 直接下载）。
+- **Wanfang PDF**: 用 `wf-download.js --q "..." --type <type> --idx <n> --save-as <path>`。内置 thesis（新标签+倒计时+点击此处）vs periodical（直接下载）分流。
 - **Browser preflight**: `ff-setup.js` 幂等。验证 profile + 下载目录。`set-browser.js <browser>` 切换默认浏览器。`--browser <browser>` 临时覆盖。
 - **Wanfang buttons**: Use `data-target` attribute bridge: evaluate marks exact button → ff-run clicks `[data-target="wf-dl"]`. Thesis: 整篇下载 preferred; bare 下载 = login expired → 换一篇。
 - **Snapshots**: Prefer evaluate JSON on result pages (cheaper). `ref` 概念不适用（我们用文本 JSON 而非 accessibility tree）。
