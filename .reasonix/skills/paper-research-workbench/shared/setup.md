@@ -20,9 +20,11 @@ node "${SKILL_DIR}/scripts/set-browser.js" <firefox|chrome|edge>
 
 如不选，默认 firefox。首次运行 `ff-setup.js` 时也会自动写入 firefox。
 
-确保所选浏览器已安装：
-- `npx playwright install firefox`（Playwright 自带 Firefox）
-- Chrome/Edge 使用系统安装版（无需额外下载）
+| 浏览器 | 安装 |
+|--------|------|
+| Firefox | `npx playwright install firefox` |
+| Chrome | 系统自带 |
+| Edge | Windows 自带 |
 
 ## Step 3: 验证环境
 

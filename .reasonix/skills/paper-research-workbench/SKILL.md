@@ -63,7 +63,7 @@ Skill (SKILL.md + platform docs)
 | Old (Claude Code) | New (Reasonix) |
 |---|---|
 | Playwright MCP `browser_*` tools | `node scripts/ff-eval.js` / `ff-run.js` |
-| Chrome + CDP + Extension + Token | Firefox/Chrome/Edge + `storageState` |
+| Chrome + CDP + Extension + Token | Firefox / Chrome / Edge + `storageState` |
 | `browser_evaluate(function="...")` | `ff-eval.js --code-file /tmp/code.js` |
 | `browser_run_code_unsafe(async (page)=>{...})` | `ff-run.js --code-file /tmp/code.js` |
 | `browser_navigate(url)` + `browser_evaluate` | `ff-eval.js --url "..." --code-file /tmp/code.js` (combined) |
