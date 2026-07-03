@@ -83,12 +83,13 @@ Skill (SKILL.md + platform docs)
 - **Wanfang login**: 不依赖登录检查阻塞。`logged=false` 仅作提示，继续执行后续操作。最多 reload 1 次（SPA 不自动感知 CARSI cookie），仍失败也继续。
 - **Wanfang pagination**: URL `p=<N>` does NOT work (SPA resets to p=1). Use bottom-pagination clicks.
 - **Wanfang PDF**: 用 `wf-download.js --q "..." --type <type> --idx <n> --save-as <path>`。内置 thesis（新标签+倒计时+点击此处）vs periodical（直接下载）分流。
-- **Browser preflight**: `init.js` 幂等。验证 profile + 下载目录。`set-browser.js <browser>` 切换默认浏览器。`--browser <browser>` 临时覆盖。
+- **Browser preflight**: `init.js` 幂等。`set-browser.js <browser>` 切换默认浏览器。`--browser <browser>` 临时覆盖。
+- **Serial execution**: 多篇论文批量操作时加 `--no-kill`，避免每个脚本互相杀死对方浏览器。
 - **Wanfang buttons**: Use `data-target` attribute bridge: evaluate marks exact button → run.js clicks `[data-target="wf-dl"]`. Thesis: 整篇下载 preferred; bare 下载 = login expired → 换一篇。
 - **Snapshots**: Prefer evaluate JSON on result pages (cheaper). `ref` 概念不适用（我们用文本 JSON 而非 accessibility tree）。
 - **Detail expiry**: If redirected to home after login, reopen saved detail URL.
 - **No results**: evaluate 内置 `noResults` 检测。`noResults=true` → 直接告知用户换搜索词。
-- **Serial downloads**: IEEE 论文下载必须串行（每篇下完 place+rename 再下一篇）。
+- **Batch processing**: 连续或并行跑多个脚本时，加 `--no-kill` 避免互相杀掉浏览器进程。例：`for ar in ...; do node ieee-detail.js --arnumber $ar --no-kill; done`
 - **Human in the loop**: 一次失败 = 停 + 诊断 + 和用户交流，不反复重试。
 - **Output**: Minimal: platform, title, final path, next action only.
 - **Python**: Windows Git Bash 无 `python3`，统一用 `python`。

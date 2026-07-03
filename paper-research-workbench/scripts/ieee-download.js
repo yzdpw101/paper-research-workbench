@@ -1,11 +1,10 @@
 /**
- * ieee-download.js — IEEE Xplore PDF download (cross-browser)
+ * ieee-download.js — IEEE Xplore PDF download
  *
  * Usage:
  *   node ieee-download.js --arnumber <n> [--save-as <path>] [--timeout <ms>]
  *
- * Uses fetch() via Playwright context to grab the PDF directly.
- * No download event, no PDF viewer, no browser-specific hacks.
+ * Uses page.goto(stampPDF) + download event to send browser cookies.
  */
 
 const { launch, DOWNLOAD_DIR } = require('./_browser');
@@ -33,54 +32,38 @@ const stampPDF = 'https://ieeexplore.ieee.org/stampPDF/getPDF.jsp?tp=&arnumber='
 
   const { browser, page } = await launch();
 
-  // Quick login check (non-blocking — skip if slow)
-  try {
-    await page.goto('https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=test', {
-      waitUntil: 'domcontentloaded', timeout: 10000
+  const result = await new Promise(resolve => {
+    const t = setTimeout(() => resolve({ error: 'download timeout' }), dlTimeout);
+
+    page.on('download', async (dl) => {
+      const filename = path.basename(dl.suggestedFilename());
+      let dest;
+      if (saveAsPath) {
+        if ((fs.existsSync(saveAsPath) && fs.statSync(saveAsPath).isDirectory()) || !path.extname(saveAsPath)) {
+          dest = path.join(saveAsPath, filename);
+        } else {
+          dest = saveAsPath;
+        }
+      } else {
+        dest = path.join(DOWNLOAD_DIR, filename);
+      }
+      const dd = path.dirname(dest);
+      if (!fs.existsSync(dd)) fs.mkdirSync(dd, { recursive: true });
+      try {
+        const stream = await dl.createReadStream();
+        const ws = fs.createWriteStream(dest);
+        await new Promise((res, rej) => { stream.pipe(ws); ws.on('finish', res); ws.on('error', rej); stream.on('error', rej); });
+        clearTimeout(t);
+        resolve({ ok: true, arnumber, download: { name: filename, path: dest, size: fs.statSync(dest).size } });
+      } catch (e) {
+        try { await dl.saveAs(dest); clearTimeout(t); resolve({ ok: true, arnumber, download: { name: filename, path: dest, size: fs.statSync(dest).size } }); }
+        catch (e2) { clearTimeout(t); resolve({ error: 'save failed: ' + e.message }); }
+      }
     });
-    await page.waitForTimeout(2000);
-    const loginOk = await page.evaluate(() => {
-      const t = (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 8000);
-      return /\bSign Out\b/i.test(t) || /Access provided by/i.test(t);
-    });
-    if (!loginOk) { console.log(JSON.stringify({ error: 'not logged in' })); await browser.close(); return; }
-  } catch (_) {
-    // Login check timed out — proceed anyway; stampPDF will return error if really not logged in
-  }
 
-  // Fetch PDF via context.request — bypass PDF viewer, works in any browser
-  try {
-    const resp = await page.context().request.fetch(stampPDF, { timeout: dlTimeout });
-    const buf = Buffer.from(await resp.body());
+    page.goto(stampPDF, { timeout: dlTimeout, waitUntil: 'commit' }).catch(() => {});
+  });
 
-    if (buf.length < 1024 || !buf.slice(0, 4).equals(Buffer.from('%PDF'))) {
-      console.log(JSON.stringify({ error: 'invalid PDF response', size: buf.length }));
-      await browser.close();
-      return;
-    }
-
-    // Determine filename
-    const disp = resp.headers()['content-disposition'] || '';
-    const fnMatch = disp.match(/filename[^;=\n]*=["']?([^"';\n]*)["']?/);
-    const filename = fnMatch ? fnMatch[1] : 'paper-' + arnumber + '.pdf';
-    const dest = (() => {
-      if (!saveAsPath) return path.join(DOWNLOAD_DIR, filename);
-      // If target is a directory or has no extension, treat as dir + filename
-      if (fs.existsSync(saveAsPath) && fs.statSync(saveAsPath).isDirectory()) return path.join(saveAsPath, filename);
-      if (!path.extname(saveAsPath)) { fs.mkdirSync(saveAsPath, { recursive: true }); return path.join(saveAsPath, filename); }
-      return saveAsPath;
-    })();
-    const destDir = path.dirname(dest);
-    if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-
-    fs.writeFileSync(dest, buf);
-    console.log(JSON.stringify({
-      ok: true, arnumber,
-      download: { name: filename, path: dest, size: buf.length }
-    }, null, 2));
-  } catch (e) {
-    console.log(JSON.stringify({ error: 'fetch failed: ' + e.message }));
-  }
-
+  console.log(JSON.stringify(result, null, 2));
   await browser.close();
 })();

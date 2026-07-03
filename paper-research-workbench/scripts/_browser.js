@@ -29,10 +29,12 @@ function stateFile(browser) {
 }
 
 function killZombies(name) {
+  // Skip if --no-kill is set (used when running multiple scripts in sequence)
+  if (process.argv.includes('--no-kill')) return;
   try {
-    if (name === 'firefox') execSync('taskkill /F /IM firefox.exe 2>nul', { stdio: 'ignore' });
-    else if (name === 'chrome') execSync('taskkill /F /IM chrome.exe 2>nul', { stdio: 'ignore' });
-    else if (name === 'edge') execSync('taskkill /F /IM msedge.exe 2>nul', { stdio: 'ignore' });
+    if (name === 'firefox') execSync('taskkill /F /IM firefox.exe 2>nul', { stdio: 'ignore', timeout: 3000 });
+    else if (name === 'chrome') execSync('taskkill /F /IM chrome.exe 2>nul', { stdio: 'ignore', timeout: 3000 });
+    else if (name === 'edge') execSync('taskkill /F /IM msedge.exe 2>nul', { stdio: 'ignore', timeout: 3000 });
   } catch (_) {}
 }
 
@@ -40,11 +42,10 @@ async function launch(options = {}) {
   const browserName = resolveBrowser();
   const { viewport = { width: 1280, height: 900 }, acceptDownloads = true } = options;
 
-  killZombies(browserName);
 
   let browser;
   if (browserName === 'firefox') {
-    browser = await firefox.launch({ headless: false });
+    browser = await firefox.launch({ headless: false, firefoxUserPrefs: { 'browser.startup.page': 0 } });
   } else if (browserName === 'chrome') {
     browser = await chromium.launch({ headless: false, channel: 'chrome' });
   } else if (browserName === 'edge') {
@@ -80,10 +81,11 @@ async function launch(options = {}) {
   };
 
   const saveState = async () => {
-    try { await context.storageState({ path: sf }); } catch (_) {}
+    try { await context.storageState({ path: sf, indexedDB: true }); } catch (_) {}
   };
 
-  // Save on browser close, context close, and signals
+  // Save on browser disconnect (user closing window), browser close, and signals
+  browser.on('disconnected', () => saveState().then(() => process.exit(0)).catch(() => process.exit(0)));
   context.on('close', () => saveState().catch(() => {}));
   const origClose = browser.close.bind(browser);
   browser.close = async () => { await saveState(); await origClose(); };
