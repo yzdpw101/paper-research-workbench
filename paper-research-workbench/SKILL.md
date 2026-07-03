@@ -14,7 +14,7 @@ Use the smallest matching path. Do not read every reference file.
 | IEEE 搜索 | `ieee/search-download.md` | `ieee-search.js --q "..." --type Journals --year 2023-2025` |
 | IEEE 摘要展开 | 同上，加 `--expand` | `ieee-search.js --q "..." --expand` |
 | IEEE 下载 | `ieee/search-download.md` §PDF download | `ieee-download.js --arnumber <n> --save-as "..."` |
-| IEEE 详情页 | `ieee/search-download.md` §Detail page | `ieee-detail.js --arnumber <n>` |
+| IEEE 详情页 | `ieee/search-download.md` §Detail page | `ieee-detail.js --arnumber <n>`（仅元数据，不含正文） |
 | IEEE Figures | `ieee/figures.md` | `ieee-figures.js --arnumber <n> --out-dir "..."` |
 | Wanfang 搜索 | `wanfang/search-download.md` | `wf-search.js --q "..." --type thesis`（自带摘要，`--no-snippet` 去摘要省 token） |
 | Wanfang 整篇下载 | `wanfang/search-download.md` | `wf-download.js --q "..." --type thesis --idx 0 --save-as "..."` |

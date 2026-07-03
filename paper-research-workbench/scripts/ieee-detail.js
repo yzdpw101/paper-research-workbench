@@ -4,7 +4,8 @@
  * Usage:
  *   node ieee-detail.js --arnumber <n>
  *
- * Extracts full abstract (clicks Show More), authors, DOI, keywords, references, citation count.
+ * Extracts metadata only: abstract, authors, DOI, keywords, references, citation count.
+ * Does NOT extract full paper text — download PDF and use PyMuPDF for that.
  */
 
 const { launch } = require('./_browser');
@@ -24,10 +25,8 @@ if (!arnumber) {
 (async () => {
   const { browser, page, goto } = await launch();
 
-  await page.goto('https://ieeexplore.ieee.org/document/' + arnumber + '/', {
-    waitUntil: 'networkidle', timeout: 60000
-  });
-  await page.waitForTimeout(2000);
+  const detailUrl = 'https://ieeexplore.ieee.org/document/' + arnumber + '/';
+  await goto(page, detailUrl, { navTimeout: 60000, waitFor: 'h1' });
 
   // Click "Show More" buttons to expand truncated content
   await page.evaluate(() => {
