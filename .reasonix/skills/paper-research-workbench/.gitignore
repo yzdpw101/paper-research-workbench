@@ -1,6 +1,0 @@
-node_modules/
-storageState-*.json
-shared/.browser
-shared/.setup-done
-.DS_Store
-*.tmp

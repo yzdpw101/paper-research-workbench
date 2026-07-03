@@ -22,7 +22,7 @@ if (!arnumber) {
 }
 
 (async () => {
-  const { browser, page } = await launch();
+  const { browser, page, goto } = await launch();
 
   await page.goto('https://ieeexplore.ieee.org/document/' + arnumber + '/', {
     waitUntil: 'networkidle', timeout: 60000
@@ -43,7 +43,7 @@ if (!arnumber) {
     const b = raw.replace(/[\s]+/g, ' ');
 
     const accessReady = /\bSign Out\b/i.test(b) || /Access provided by/i.test(b);
-    if (!accessReady) return { accessReady, error: 'not logged in' };
+    if (!accessReady) return { accessReady, error: 'not logged in', warning: '未检测到登录态（可能是校园网IP认证，不影响使用）' };
 
     let title = (document.querySelector('h1')?.textContent || '').trim().replace(/\s+/g, ' ');
     if (!title || title.length < 10) {

@@ -1,0 +1,27 @@
+{
+  "task_id": "20260703-052046-1-116-begin-1-116-skill-chrome-11-task-32902-ms-paper-re",
+  "goal": "这是一次新的对话发现的问题，这是记录，你看看要怎么改，写一个分析给我，先不着急改：[已粘贴文本 #1 · 116 行]\n\n--- Begin [已粘贴文本 #1 · 116 行] ---\n你把此次使用这个skill出现的问题说明一下，我发现这个超时问题很严重，应该给每个涉及的脚本加上参数设置，另外这个Chrome的下载保存目录的问题，还有其他的也记录一下\n\n思考过程\n已完成\n好的，让我全面检查所有涉及的脚本，把问题都列出来。\n\n\n⊞11\n✓\ntask\n32902 ms\n\n思考过程\n已完成\n好的，以下是本次使用 paper-research-workbench Skill 中发现的所有问题汇总：\n\n🔴 问题汇总报告\n一、超时问题（最严重）\n#\t文件\t行号\t问题\t详情\n1\tieee-search.js\tL44\tpage.goto 超时硬编码 30s\t无法通过 CLI 参数调整，慢网络必超时\n2\tieee-download.js\tL39\t登录检查 timeout: 10000 硬编码\t虽 try/catch 兜底，但10s对慢网络不足\n3\twf-search.js\tL36\tpage.goto 超时硬编码 30s\t同 ieee-search.js，无 --nav-timeout 参数\n4\twf-download.js\tL61\tpage.goto 超时硬编码 30s\t我实际遇到的，设了 --timeout 180000 但只管整体下载超时，导航超时还是30s\n5\twf-chapter.js\tL54, L84\t① 下载超时 120000 硬编码，② page.goto 超时 30s 硬编码\t最严重：连 --timeout CLI 参数都没有，用户完全无法调\n6\t所有轮询循环\t多处\t等待新标签/点击按钮的循环次数硬编码（10次/15次/30次，每次1s）\t轮询总时长固定，不能随 --timeout 伸缩\n建议修复方案：\n\n给每个脚本增加 --nav-timeout 参数控制导航超时（默认60000）\n给 wf-chapter.js 增加 --timeout 参数\n将 page.goto 的 timeout 值统一通过参数传入，而不是硬编码\n轮询循环改为基于超时时间的模式（例：const deadline = Date.now() + navTimeout; while(Date.now() \u003c deadline) { ... }）\n二、下载保存路径问题（我实际遇到了）\n#\t文件\t问题\t表现\n1\twf-download.js L43-51\tsaveAs() 的 fallback 逻辑有问题\t我遇到的 EPERM 错误：createReadStream 失败后调用 dl.saveAs(\"E:/Desktop/123\")，但这是目录路径不含文件名，导致 EPERM: operation not permitted\n2\twf-download.js L67-71\t路径判定逻辑脆弱\t#71 处 !path.extname(saveAsPath) 区分文件/目录不可靠（例如路径末尾有空格或引号时会误判）\n3\trun.js、wf-chapter.js\t同样的问题\tdl.suggestedFilename() 直接用于路径拼接，存在路径穿越风险（恶意服务端返回 ../../virus.exe）\n4\t所有下载脚本\t无权限预检\t保存前不做写入权限检查，失败后错误信息不明确\n建议修复方案：\n\nsaveAs() 的 fallback 应使用完整路径（目录 + filename）\n检查 suggestedFilename() 用 path.basename() 消毒\n增加 fs.access() 写入权限预检\n三、其他问题\n#\t文件\t问题\t详情\n1\tieee-download.js\tcontent-disposition 解析脆弱\t只匹配了一种格式的 filename，遇到 RFC 5987 编码（如 filename*=UTF-8''...) 会取不到文件名\n2\twf-download.js\t缺少 context 参数支持\t虽然 _browser.js 返回了 context，但脚本中手动 context.on('page') 监听对新标签页有遗漏风险\n3\t_browser.js L31-36\texecSync('taskkill ...') 阻塞\t同步执行杀死进程，默认超时30s，无配置参数\n4\t各脚本 waitForTimeout\t零散散布的硬编码等待\t1000ms / 1500ms / 2000ms / 3000ms 等大量硬编码等待散布在各脚本中，难以统一调整\n四、本次实际踩坑记录\n一开始 Firefox 超时 → 换了 Chrome 才好（可能是网络/浏览器差异）\n搜索时第一次 0 结果 → 关键词太严格 \"deep learning for image segmentation\" WITH --type Journals --year 2023-2025 反而无结果，简化后才搜到\n导航超时 30s → 搜到了但下载时 page.goto 超时30s，--timeout 不控制导航超时\nEPERM 保存权限 → saveAs(\"E:/Desktop/123\") 路径不含文件名导致权限错误，最终手动 cp 解决\n要不要我把这些问题整理成一个 memory 记忆 或者直接提 PR 修复这些脚本？\n\n\n\n分叉会话\n\n总结\n\n回溯\n对了，应该查看网页是否加载完成，你探索一下看看能不能查看到是否加载完成，这样就不会出现是因为加载没完成而导致错判无结果的情况，你探索一下，把结果告诉我，不用你改\n\n思考过程\n已完成\n好的，我来全面探索一下各脚本的页面加载完成检测逻辑。\n\n\n⊞10\n✓\ntask\n43496 ms\n\n思考过程\n已完成\n以下是探索结果汇报：\n\n页面加载完成检测情况\n核心结论\n所有脚本都存在问题——它们只依赖 waitUntil: 'domcontentloaded' + 固定时长 waitForTimeout()，没有真正检测页面是否加载完成。\n\n具体问题\n1. 大部分脚本用错了 waitUntil\n参数\t含义\t当前使用的脚本\ndomcontentloaded ⬅️ 几乎都用这个\tHTML 框架加载完就算完成，不等 AJAX/异步数据\tieee-search, wf-search, wf-download, wf-chapter, eval\nnetworkidle ✅ 正确的做法\t等网络连接稳定（500ms 内无新请求），等异步数据加载完\t只有 ieee-detail.js 用了这个\n2. 固定 waitForTimeout 不可靠\n所有脚本在导航后都只等一个固定时间（3秒/2秒），然后立刻 evaluate。但：\n\n网络慢 → 3秒不够 → 异步数据还没回来 → 拿到空结果\n网络快 → 白白等了3秒 → 浪费时间\n不知道数据何时真正到齐\n3. 对 SPA 单页应用（万方）影响最大\n万方是 Vue.js 构建的 SPA，搜索结果完全通过 AJAX 异步加载。脚本只等了 domcontentloaded + 3s，然后立即查 div.normal-list。如果 AJAX 还没返回：\n\nquerySelectorAll('div.normal-list') → 空数组\n正则匹配 /没有检索到数据/ → 可能匹配到空白页上的文字\n误报\"无结果\"\n这正好解释了之前搜索时出现 0 结果的场景。\n\n4. IEEE 搜索页也是异步加载的\nIEEE Xplore 搜索结果页面同样通过 XHR/fetch 异步渲染，domcontentloaded 不等数据到达。3秒不够的话也会出现假阴性。\n\n正确的做法应该是\n方式\t说明\t推荐度\nwaitForSelector('div.normal-list \u003e *')\t等特定元素出现在 DOM 中\t⭐⭐⭐ 首选\nwaitForFunction(() =\u003e document.querySelectorAll('.result-item').length \u003e 0)\t轮询等结果列表出现\t⭐⭐⭐ 最可靠\nwaitUntil: 'networkidle'\t等网络空闲（但可能等太久）\t⭐⭐ 简单但保守\nwaitForTimeout(n)\t固定等待\t❌ 不推荐\n具体到每个脚本的最佳方案：\n\nwf-search.js / wf-download.js / wf-chapter.js：导航后加 page.waitForSelector('div.normal-list', { timeout: 30000 })，确保万方的结果列表已渲染\nieee-search.js：导航后加 page.waitForSelector('a[href*=\"/document/\"]', { timeout: 30000 })，确保 IEEE 的结果链接已出现\n如果超时了再报错，而不是静默返回空列表\n要不要我把这些信息存成 memory，方便后续修复时参考？\n--- End [已粘贴文本 #1 · 116 行] ---",
+  "scope": null,
+  "non_goals": null,
+  "allowed_operations": {
+    "write": true,
+    "network": false,
+    "publish": false
+  },
+  "success_criteria": [
+    {
+      "id": "objective_evidence",
+      "description": "The goal outcome is supported by direct evidence, such as inspected code, reproduced behavior, source material, or concrete findings.",
+      "required": true,
+      "evidence_ids": [
+        "f1"
+      ]
+    },
+    {
+      "id": "verification",
+      "description": "The result has relevant verification evidence, such as tests, commands, benchmarks, manual checks, or a documented reason why verification is not applicable.",
+      "required": true,
+      "evidence_ids": null
+    }
+  ]
+}

@@ -39,10 +39,13 @@ if (year) { const parts = year.split('-'); url += '&ranges=' + parts[0] + '_' + 
 url += '&rowsPerPage=' + rows + '&pageNumber=' + page;
 
 (async () => {
-  const { browser, page } = await launch();
+  const { browser, page, goto } = await launch();
 
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForTimeout(waitMs);
+  await goto(page, url, {
+    navTimeout: parseInt(opt('--nav-timeout', '60000')),
+    waitFor: 'a[href*="/document/"]',
+    waitMs: expand ? 0 : 500     // extra wait only if not expanding abstracts
+  });
 
   // Expand all abstracts if requested
   if (expand) {
@@ -62,7 +65,7 @@ url += '&rowsPerPage=' + rows + '&pageNumber=' + page;
     const denialMarkers = /Purchase PDF|Subscribe|Access Denied|Get Access|Sign in to access/i.test(text);
     const accessReady = hasSignOut || accessProvided;
     const needLogin = !accessReady && (signInMarkers || denialMarkers);
-    if (!accessReady) return { accessReady, needLogin, sample: text.slice(0, 160) };
+    if (!accessReady) return { accessReady, needLogin, warning: '未检测到登录态（可能是校园网IP认证，不影响使用）', items: [], totalResults: 0 };
 
     const noResults = /No results found|unable to find results/i.test(text);
     if (noResults) return { accessReady, needLogin, noResults: true, total: 0, items: [] };

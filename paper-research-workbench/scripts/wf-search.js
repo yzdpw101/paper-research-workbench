@@ -32,9 +32,11 @@ if (!keyword) {
 const url = 'https://s.wanfangdata.com.cn/' + wfType + '?q=' + encodeURIComponent(keyword) + '&p=' + pageNum;
 
 (async () => {
-  const { browser, page } = await launch();
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForTimeout(waitMs);
+  const { browser, page, goto } = await launch();
+  await goto(page, url, {
+    navTimeout: parseInt(opt('--nav-timeout', '60000')),
+    waitFor: 'div.normal-list'
+  });
 
   const result = await page.evaluate((opts) => {
     const TARGET_INDEX = null;
@@ -46,7 +48,7 @@ const url = 'https://s.wanfangdata.com.cn/' + wfType + '?q=' + encodeURIComponen
     const hasInstitution = /大学图书馆|图书馆/.test(header);
     const noAccess = /无权限|购买|充值|机构权限|未订购|无法下载/.test(text);
     const logged = (hasLogout || hasInstitution || !hasLoginText) && !noAccess;
-    if (!logged || noAccess) return { logged, noAccess, header: header.slice(0, 160) };
+    if (!logged || noAccess) return { logged, noAccess, warning: '未检测到登录态（可能是校园网IP认证，不影响使用）', items: [], totalResults: 0 };
 
     if (/没有检索到数据|没有找到您要的资源/.test(text)) return { logged, noAccess: false, noResults: true, total: 0, items: [] };
 

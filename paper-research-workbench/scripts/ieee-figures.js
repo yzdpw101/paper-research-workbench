@@ -28,11 +28,11 @@ if (!arnumber || !outDir) {
 (async () => {
   fs.mkdirSync(outDir, { recursive: true });
 
-  const { browser, page } = await launch();
+  const { browser, page, goto } = await launch();
 
   // 1. Navigate to detail page
   const detailUrl = 'https://ieeexplore.ieee.org/document/' + arnumber + '/';
-  await page.goto(detailUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await goto(page, detailUrl, { navTimeout: 60000, waitFor: 'h1' });
   await page.waitForTimeout(3000);
 
   // 2. Click Figures tab

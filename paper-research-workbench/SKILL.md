@@ -42,9 +42,9 @@ Skill (SKILL.md + platform docs)
 │  wf-search.js     Wanfang search            │
 │  wf-download.js   Wanfang download          │
 │  wf-chapter.js    Wanfang chapter download  │
-│  ff-eval.js       generic evaluate (fallback)│
-│  ff-run.js        generic run (fallback)     │
-│  ff-setup.js      verify + init browser     │
+│  eval.js       generic evaluate (fallback)│
+│  run.js        generic run (fallback)     │
+│  init.js      verify + init browser     │
 │  set-browser.js   set default browser       │
 │  place_download.js                      │
 │  save_ieee_figures.py                   │
@@ -54,10 +54,8 @@ Skill (SKILL.md + platform docs)
                ▼
 ┌─────────────────────────────────────────┐
 │  Firefox / Chrome / Edge                 │
-│  (~/.paper-research-workbench/            │
-│   storageState-<browser>.json)            │
-│  Downloads → ~/Downloads/paper-research-  │
-│  workbench/                               │
+│  (.state/storageState-<browser>.json)     │
+│  Downloads → .state/downloads/            │
 └─────────────────────────────────────────┘
 ```
 
@@ -65,28 +63,28 @@ Skill (SKILL.md + platform docs)
 
 | Old (Claude Code) | New (Reasonix) |
 |---|---|
-| Playwright MCP `browser_*` tools | `node scripts/ff-eval.js` / `ff-run.js` |
+| Playwright MCP `browser_*` tools | `node scripts/eval.js` / `run.js` |
 | Chrome + CDP + Extension + Token | Firefox / Chrome / Edge + `storageState` |
-| `browser_evaluate(function="...")` | `ieee-search.js` / `wf-search.js` 等专用脚本；`ff-eval.js --code-file` 作 fallback |
-| `browser_run_code_unsafe(async (page)=>{...})` | `ff-run.js --code-file /tmp/code.js` |
-| `browser_navigate(url)` + `browser_evaluate` | `ff-eval.js --url "..." --code-file /tmp/code.js` (combined) |
-| `browser_click [data-target="..."]` | `ff-run.js --code-file /tmp/code.js` (page.click inside) |
-| `chrome-preflight.ps1` → `CHROME_DIR` | `ff-setup.js` + `set-browser.js` → `shared/.browser` |
+| `browser_evaluate(function="...")` | `ieee-search.js` / `wf-search.js` 等专用脚本；`eval.js --code-file` 作 fallback |
+| `browser_run_code_unsafe(async (page)=>{...})` | `run.js --code-file /tmp/code.js` |
+| `browser_navigate(url)` + `browser_evaluate` | `eval.js --url "..." --code-file /tmp/code.js` (combined) |
+| `browser_click [data-target="..."]` | `run.js --code-file /tmp/code.js` (page.click inside) |
+| `chrome-preflight.ps1` → `CHROME_DIR` | `init.js` + `set-browser.js` → `.state/.browser` |
 | `${SKILL_DIR}` | Same — Reasonix resolves via skill root |
 
 ## Hard rules
 
-- **First-time setup**: 检查 `shared/.setup-done`。不存在 → **立即停止，禁止 Playwright**。按 `shared/setup.md` 逐步引导。完成后 Agent 跑 `ff-setup.js` → 创建 `.setup-done`。存在 → 正常流程。
+- **First-time setup**: 检查 `shared/.setup-done`。不存在 → **立即停止，禁止 Playwright**。按 `shared/setup.md` 逐步引导。完成后 Agent 跑 `init.js` → 创建 `.setup-done`。存在 → 正常流程。
 - **搜索 ≠ 下载**: "检索/找/搜" → 只搜索+展示，不下载。"下载/下/保存" → 只下载。
 
-- **Login**: No auto-login. 搜索页、详情页、下载前都必须先跑 login check evaluate。未通过 → 停止并让用户登录。
-- **IEEE login**: 搜索页 + 详情页 + 下载前三次 login check。`Sign Out` > `Access provided by`，二者有一即 passed。
-- **IEEE PDF**: 用 `ieee-download.js --arnumber <n> --save-as <path>`。登录检查非阻塞（超时时直接尝试下载），下载用 `context.request.fetch()` 跨浏览器通用。
-- **Wanfang login**: Merged evaluate 内置 login check。`logged=false` → `page.reload()` + 等 2s + 重跑（SPA 不自动感知 CARSI cookie），仍失败才 stop。
+- **Login**: 不依赖登录检查来阻塞操作。校园网 IP 认证不会产生持久 Cookie，登录检查经常误报。**搜索、详情、下载前不做登录检查**——直接尝试操作，失败时自然报错（如 404、无权访问等）。如果用户明确说"未登录"，再引导登录。
+- **IEEE login**: 不做前置登录检查。下载时 `ieee-download.js` 会直接尝试 fetch，返回错误时再提示用户。
+- **IEEE PDF**: 用 `ieee-download.js --arnumber <n> --save-as <path>`。`context.request.fetch()` 直接下载，无需登录检查。
+- **Wanfang login**: 不依赖登录检查阻塞。`logged=false` 仅作提示，继续执行后续操作。最多 reload 1 次（SPA 不自动感知 CARSI cookie），仍失败也继续。
 - **Wanfang pagination**: URL `p=<N>` does NOT work (SPA resets to p=1). Use bottom-pagination clicks.
 - **Wanfang PDF**: 用 `wf-download.js --q "..." --type <type> --idx <n> --save-as <path>`。内置 thesis（新标签+倒计时+点击此处）vs periodical（直接下载）分流。
-- **Browser preflight**: `ff-setup.js` 幂等。验证 profile + 下载目录。`set-browser.js <browser>` 切换默认浏览器。`--browser <browser>` 临时覆盖。
-- **Wanfang buttons**: Use `data-target` attribute bridge: evaluate marks exact button → ff-run clicks `[data-target="wf-dl"]`. Thesis: 整篇下载 preferred; bare 下载 = login expired → 换一篇。
+- **Browser preflight**: `init.js` 幂等。验证 profile + 下载目录。`set-browser.js <browser>` 切换默认浏览器。`--browser <browser>` 临时覆盖。
+- **Wanfang buttons**: Use `data-target` attribute bridge: evaluate marks exact button → run.js clicks `[data-target="wf-dl"]`. Thesis: 整篇下载 preferred; bare 下载 = login expired → 换一篇。
 - **Snapshots**: Prefer evaluate JSON on result pages (cheaper). `ref` 概念不适用（我们用文本 JSON 而非 accessibility tree）。
 - **Detail expiry**: If redirected to home after login, reopen saved detail URL.
 - **No results**: evaluate 内置 `noResults` 检测。`noResults=true` → 直接告知用户换搜索词。

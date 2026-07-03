@@ -1,0 +1,340 @@
+{
+  "linear_array": [
+    [
+      "9964507",
+      "Optimization of Linear Antenna Array Thinning using Binary Genetic Algorithm (BGA)"
+    ],
+    [
+      "9855099",
+      "Effect of Linear Antenna Array Thinning on Its Directional Pattern Parameters"
+    ],
+    [
+      "11188818",
+      "Linear Antenna Array Thinning Based on Improved Binary Grey Wolf Optimization Algorithm"
+    ],
+    [
+      "11363342",
+      "Synthesis of Thinned Linear Antenna Array Using Genetic Algorithm to Lower Peak Sidelobe Level and Maintain Half-Power Beamwidth"
+    ],
+    [
+      "10128527",
+      "Binary bat swarm algorithm for thinning antenna elements in linear array"
+    ],
+    [
+      "9440427",
+      "Pattern Synthesis of Uniform and Sparse Linear Antenna Array Using Mayfly Algorithm"
+    ],
+    [
+      "9647478",
+      "Genetic Algorithm for Antenna Array Thinning with Minimization of Side Lobe Level"
+    ],
+    [
+      "10840644",
+      "Radiation Pattern Synthesis of Radome-Enclosed Sparse Linear Arrays"
+    ],
+    [
+      "10028373",
+      "Optimization of a Sparse Uniform Linear Array for Cylindrical Wave Synthesis"
+    ],
+    [
+      "9625091",
+      "A Novel Sparse Linear Array Design by Using Two-dimension Particle Swarm Optimization"
+    ],
+    [
+      "9618200",
+      "Hybrid Iterative Fourier Transform and Convex Optimization for Pattern Synthesis of Sparse Linear Arrays"
+    ],
+    [
+      "9639116",
+      "A New Fitness Function for Sparse Linear Array Evaluation Based on the Point Spread Function"
+    ],
+    [
+      "10926035",
+      "Static Thinning of Large Linear Antenna Arrays Using a Genetic Algorithm for THz Frequencies"
+    ],
+    [
+      "10028312",
+      "An Effective and Efficient Synthesis Technique for Linear Array Thinning"
+    ],
+    [
+      "10249600",
+      "Linear Array Thinning Using JAYA-Iterative Fourier Technique"
+    ],
+    [
+      "9581755",
+      "A HS-CVX Algorithm for Sparse linear array with low sidelobe pattern"
+    ],
+    [
+      "8961998",
+      "Synthesis of Sparse Linear Arrays With Reduced Excitation Control Numbers Using a Hybrid Cuckoo Search Algorithm With Convex Programming"
+    ],
+    [
+      "9028082",
+      "Adaptive Interference Suppression of Phase-Only Thinned Arrays via Convex Optimization"
+    ],
+    [
+      "9708454",
+      "Interference Nulling Over Broad Angular Region using Modified Binary Cat Swarm Optimization"
+    ],
+    [
+      "10868928",
+      "Sparse Array Optimization for Beampattern Synthesis with Low-Bit Phase Quantization"
+    ]
+  ],
+  "planar_array": [
+    [
+      "9785097",
+      "Application of Binary Particle Swarm Optimization Algorithm for Thinned Planar Antenna Array Synthesis"
+    ],
+    [
+      "9672772",
+      "Thinned Planar Antenna Array Synthesis: A Multiobjective Improved Binary Cat Swarm Optimization Approach"
+    ],
+    [
+      "9886430",
+      "A Genetic-Algorithm-Based Sparse Planar Array Optimization Method for 77 GHz High-Resolution Imaging"
+    ],
+    [
+      "9888441",
+      "A Novel Probability Density Taper Approach for Planar Array Thinning"
+    ],
+    [
+      "11384261",
+      "Synthesis of Thinned Planar Array Using Two-Stage Iterative Fourier Transform"
+    ],
+    [
+      "9268102",
+      "Design of Wide Scanning Sparse Planar Array Using Both Matrix-Pencil and Space-Mapping Methods"
+    ],
+    [
+      "10881509",
+      "A Hybrid OMP-Broyden Algorithm for Thinning Antenna Array"
+    ],
+    [
+      "9866791",
+      "Synthesis of Thinned Planar Arrays Based on Precoded Subarray Structures"
+    ],
+    [
+      "9790551",
+      "High Gain Optimization with Equal Amplitude Excitation for Sparse Planar Array"
+    ],
+    [
+      "10560504",
+      "Wide-Angle Scanning Thinned Phased Array Synthesis Based on Improved Multiobjective Beluga Whale Optimization Algorithm"
+    ],
+    [
+      "9170798",
+      "Adaptive Learning of Probability Density Taper for Large Planar Array Thinning"
+    ],
+    [
+      "10880877",
+      "An Improved Optimization for Constrained Sparse Planar Arrays Based on Adaptive Genetic Algorithm"
+    ],
+    [
+      "11379165",
+      "Planar Array Thinning by Genetic Algorithm with Quantum Selection"
+    ],
+    [
+      "10366536",
+      "New Improved Sierpinski Carpet Structures Based Thinned Planar Array to Synthesize Low Sidelobes Radiation Pattern"
+    ],
+    [
+      "11556468",
+      "A Novel Multi-Strategy Nonlinear Multi-Objective Particle Swarm Optimization Algorithm for Sparse Planar Antenna Array Synthesis"
+    ],
+    [
+      "11398685",
+      "Synthesis of Planar Sparse Arrays Based on Improved Dung Beetle Optimization Algorithm"
+    ],
+    [
+      "10277666",
+      "Research on the synthesis of sparse planar array with large minimum spacing based on hybrid optimization"
+    ],
+    [
+      "9944181",
+      "Pattern Synthesis for Different Sparse Planar Arrays by a Hybrid Unconstrained-Heuristic Approach"
+    ],
+    [
+      "9453148",
+      "Synthesis of Sparse Antenna Arrays Subject to Constraint on Directivity via Iterative Convex Optimization"
+    ],
+    [
+      "10250055",
+      "Optimization of Sparse Planar Arrays using Genetic Algorithms"
+    ]
+  ],
+  "circular_array": [
+    [
+      "10248163",
+      "Design of Frequency-Invariant Beamformers with Sparse Concentric Circular Arrays"
+    ],
+    [
+      "11398992",
+      "Synthesis of Circular Antenna Array Thinning For Wireless Communication Applications"
+    ],
+    [
+      "11328058",
+      "Azimuth DOA Estimation Using Concentric Coprime Uniform Circular Array With Sparse Bayesian Learning"
+    ],
+    [
+      "11561928",
+      "Multi-Source Localization in High-Noise Mixed Fields: A Logarithmic Spacing Multi-Concentric Circular Array"
+    ],
+    [
+      "11585908",
+      "Synthesis of Time-Modulated Sparse Circular Array with I/Q Orthogonal Modulation for Generation of Multi-Mode OAM Beams"
+    ],
+    [
+      "9414069",
+      "Window Beamformer for Sparse Concentric Circular Array"
+    ],
+    [
+      "11237032",
+      "Synthesis of Large Thinned Planar Circular Array Using Two-Stage Alternating Iterative FFT"
+    ],
+    [
+      "9849787",
+      "Sparse Circular Arrays with Low Sidelobe Levels"
+    ],
+    [
+      "10469800",
+      "Synthesis of Time-Modulated Sparse Circular Arrays With Low Sidelobes and Suppressed Sidebands"
+    ],
+    [
+      "10694147",
+      "Greedy Design of Circular Concentric Arrays for Broadband MVDR"
+    ]
+  ],
+  "conformal_array": [
+    [
+      "10881376",
+      "Optimized Design of Sparse Spherical Conformal Array Based on Optimization Algorithm"
+    ],
+    [
+      "11387512",
+      "Sparse Design of Navigation Conformal Array and Its Beamforming"
+    ],
+    [
+      "10064793",
+      "The Design of Sparse Wideband Conformal Array in Wide Angle Scanning"
+    ],
+    [
+      "10426817",
+      "Low Sidelobe Optimization Design of Conformal Sparse Array Antenna using Active Pattern"
+    ],
+    [
+      "10069223",
+      "Sparse Conformal Array Synthesis Based on Multiagent Genetic Algorithm"
+    ],
+    [
+      "10142650",
+      "A Broadband Multi-Helix Conformal Sparse Array Design Method"
+    ],
+    [
+      "11102247",
+      "A Multi-Objective Hybrid Method for Optimizing the Directivity Pattern of Sparse Conformal Array"
+    ],
+    [
+      "9531228",
+      "Synthesis of Sparse Circular-Arc Arrays with Wide Angle Scanning Based on Iterative Convex Optimization"
+    ],
+    [
+      "9881334",
+      "Sparse Cylindrical Arrays Based on the Low-Discrepancy Sobol Sequence Sampling"
+    ],
+    [
+      "9704563",
+      "Sparse Cylindrical Arrays with Low Discrepancy Element Spacing Based on Van der Corput Sequence"
+    ],
+    [
+      "10133565",
+      "Sparse Hemispherical Arrays with Hierarchical Low Discrepancy Sequence Sampling"
+    ],
+    [
+      "10381089",
+      "A Sparse Conformal Multi-Faceted Array Based on Pyramid/Trapezoid Subarrays"
+    ]
+  ],
+  "algorithms_and_review": [
+    [
+      "10761799",
+      "Improved Particle Swarm Optimization in Synthesis of Rectangular Thinned Array Antennas"
+    ],
+    [
+      "9753378",
+      "Synthesis of Thinned Array Antenna with Convolutional Neural Network"
+    ],
+    [
+      "11115256",
+      "Sparse Array Configurations for DOA Estimation of Non-Circular Sources: A Review"
+    ],
+    [
+      "10064832",
+      "A Weed Invasion and Genetic Hybrid Algorithm in Linear Sparse Array Synthesis"
+    ],
+    [
+      "11298418",
+      "Off-Grid Sparse Array Synthesis With Discrete Phase Constraints: A Mixed-Integer Programming Approach"
+    ],
+    [
+      "9833225",
+      "Low-Complexity Sparse Array Synthesis Based on Off-Grid Compressive Sensing"
+    ],
+    [
+      "10470205",
+      "Synthesis of Large Thinned Array with Multiple Shaped Patterns Using Modified Iterative FFT"
+    ],
+    [
+      "9625517",
+      "Sparse Array Beampattern Synthesis via Majorization-Based ADMM"
+    ],
+    [
+      "11412236",
+      "Modified Cuckoo Search Algorithm for Beam-Scanning Sparse Array Antenna Synthesis"
+    ],
+    [
+      "10276866",
+      "BCS Based MIMO Sparse Array Synthesis for Near-Field Imaging"
+    ],
+    [
+      "10881806",
+      "Sparse Array Synthesis of Phased Array Radar Using ADMM Algorithm"
+    ],
+    [
+      "10137449",
+      "Synthesis of Linear Sparse Array Using DNN-Based Machine-Learning Method"
+    ],
+    [
+      "10054560",
+      "Sparse Array Beampattern Synthesis via Two-Stage Penalty Dual Decomposition Method"
+    ],
+    [
+      "10375344",
+      "Multibeam Synthesis for a Reconfigurable Sparse Array via a New Consensus PDD Framework"
+    ],
+    [
+      "11483027",
+      "A Novel Stepwise Synthesis Method for Sparse Phased Array Antennas"
+    ],
+    [
+      "10356614",
+      "Synthesis of Sparse Arrays With Discrete Phase Constraints via Mixed-Integer Programming"
+    ],
+    [
+      "9703742",
+      "Synthesis of Sparse Arrays With a More Efficient Reweighted l1-norm Minimization Algorithm"
+    ],
+    [
+      "10596260",
+      "Adaptive Optical Thinned Antenna Array Controlled by an Integrated Photonic Processor"
+    ],
+    [
+      "11266154",
+      "Array Thinning by Hybrid Quantum-Classical Evolutionary Optimization"
+    ],
+    [
+      "11379190",
+      "A Novel Multi-Objective Maxwell's Equations Derived Optimization Algorithm"
+    ]
+  ]
+}

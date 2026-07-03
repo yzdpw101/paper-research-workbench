@@ -1,0 +1,59 @@
+{
+  "9964507": {
+    "title": "Optimization of Linear Antenna Array Thinning using BGA",
+    "doi": "10.1109/ICRITO56286.2022.9964507",
+    "authors": [
+      "Mian Muhammad Kamal",
+      "Shouyi Yang",
+      "Srikanta Kumar Mohapatra"
+    ]
+  },
+  "8961998": {
+    "title": "Synthesis of Sparse Linear Arrays With Reduced Excitation Control Numbers",
+    "doi": "10.1109/LAWP.2020.2967431",
+    "authors": [
+      "Rui-Qi Wang",
+      "Yong-Chang Jiao"
+    ]
+  },
+  "9618200": {
+    "title": "Hybrid Iterative Fourier Transform and Convex Optimization for Pattern Synthesis of Sparse Linear Arrays",
+    "doi": "10.1109/ICMMT52847.2021.9618200"
+  },
+  "9785097": {
+    "title": "Application of BPSO for Thinned Planar Antenna Array Synthesis",
+    "doi": "10.1109/ICACCS54159.2022.9785097"
+  },
+  "9672772": {
+    "title": "Thinned Planar Antenna Array Synthesis: Multiobjective Improved BCSO",
+    "doi": "10.1109/ICSC53193.2021.9672772"
+  },
+  "9886430": {
+    "title": "GA-Based Sparse Planar Array Optimization for 77 GHz Imaging",
+    "doi": "10.1109/AP-S/USNC-URSI47032.2022.9886430"
+  },
+  "9849787": {
+    "title": "Sparse Circular Arrays with Low Sidelobe Levels",
+    "doi": "10.1109/CTISC54888.2022.9849787"
+  },
+  "10248163": {
+    "title": "Frequency-Invariant Beamformers with Sparse Concentric Circular Arrays",
+    "doi": "10.1109/WASPAA58266.2023.10248163"
+  },
+  "10881376": {
+    "title": "Optimized Design of Sparse Spherical Conformal Array",
+    "doi": "10.1109/APCAP62011.2024.10881376"
+  },
+  "10069223": {
+    "title": "Sparse Conformal Array Synthesis Based on Multiagent GA",
+    "doi": "10.1109/APCAP56600.2022.10069223"
+  },
+  "11102247": {
+    "title": "Multi-Objective Hybrid Method for Sparse Conformal Array Directivity",
+    "doi": "10.1109/ICCCAS65806.2025.11102247"
+  },
+  "9753378": {
+    "title": "Synthesis of Thinned Array Antenna with CNN",
+    "doi": "10.1109/ISAPE54070.2021.9753378"
+  }
+}

@@ -1,14 +1,8 @@
 /**
- * wf-download.js — Wanfang paper download (one-shot)
- *
- * Usage:
- *   node wf-download.js --q <keyword> --type <paper|periodical|thesis|conference|...>
- *                       [--idx <n>] [--page <n>] [--save-as <path>] [--timeout <ms>]
- *
- * Handles both thesis (整篇下载→新标签→倒计时→点击此处) and periodical (下载→直接触发) flows.
+ * wf-download-patched2.js — Wanfang download, saves to default dir then copies
  */
-
-const { launch, DOWNLOAD_DIR } = require('./_browser');
+const BASE = "C:/Users/Tel13/.agents/skills/paper-research-workbench/scripts";
+const { launch, DOWNLOAD_DIR } = require(BASE + '/_browser');
 const fs = require('fs');
 const path = require('path');
 
@@ -21,46 +15,42 @@ const keyword = opt('--q', '');
 const wfType = opt('--type', 'paper');
 const targetIdx = parseInt(opt('--idx', '0'));
 const pageNum = opt('--page', '1');
-const saveAsPath = opt('--save-as', '');
-const dlTimeout = parseInt(opt('--timeout', '120000'));
+const saveAsDir = opt('--save-as', '');
+const dlTimeout = parseInt(opt('--timeout', '180000'));
+const navTimeout = parseInt(opt('--nav-timeout', '120000'));
 
 if (!keyword) {
-  console.error('Usage: node wf-download.js --q <keyword> --type <paper|thesis|periodical|...> [--idx 0] [--save-as <path>]');
+  console.error('Usage: ... --q <keyword> --type <type> [--idx 0] [--save-as <dir>]');
   process.exit(1);
 }
 
 const searchUrl = 'https://s.wanfangdata.com.cn/' + wfType + '?q=' + encodeURIComponent(keyword) + '&p=' + pageNum;
+let finalPath = '';
 
 (async () => {
   fs.mkdirSync(DOWNLOAD_DIR, { recursive: true });
-  const { browser, context, page, goto } = await launch();
+  const { browser, context, page } = await launch();
 
   const result = await new Promise(resolve => {
     const t = setTimeout(() => resolve({ error: 'download timeout' }), dlTimeout);
 
     function listen(p) {
       p.on('download', async (dl) => {
-        const filename = path.basename(dl.suggestedFilename()); // sanitize
-        let dest;
-        if (saveAsPath) {
-          // if target exists as dir or has no extension, treat as directory
-          if ((fs.existsSync(saveAsPath) && fs.statSync(saveAsPath).isDirectory()) || !path.extname(saveAsPath)) {
-            dest = path.join(saveAsPath, filename);
-          } else {
-            dest = saveAsPath;
-          }
-        } else {
-          dest = path.join(DOWNLOAD_DIR, filename);
-        }
-        const dd = path.dirname(dest);
-        if (!fs.existsSync(dd)) fs.mkdirSync(dd, { recursive: true });
-        try {
-          const stream = await dl.createReadStream();
-          const ws = fs.createWriteStream(dest);
-          await new Promise((res, rej) => { stream.pipe(ws); ws.on('finish', res); ws.on('error', rej); stream.on('error', rej); });
-        } catch (_) { await dl.saveAs(dest); }
         clearTimeout(t);
-        resolve({ ok: true, title: _title, download: { name: filename, path: dest, size: fs.statSync(dest).size } });
+        // Save to default download dir first
+        const tmpPath = path.join(DOWNLOAD_DIR, dl.suggestedFilename());
+        await dl.saveAs(tmpPath);
+        const size = fs.statSync(tmpPath).size;
+        let finalDestination = tmpPath;
+        
+        // Then copy to target if specified
+        if (saveAsDir) {
+          const targetDir = saveAsDir;
+          if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+          finalPath = path.join(targetDir, dl.suggestedFilename());
+        }
+        
+        resolve({ ok: true, title: _title, download: { name: dl.suggestedFilename(), path: tmpPath, size }, targetPath: finalPath });
       });
     }
     for (const p of context.pages()) listen(p);
@@ -69,8 +59,8 @@ const searchUrl = 'https://s.wanfangdata.com.cn/' + wfType + '?q=' + encodeURICo
     let _title = '';
 
     (async () => {
-      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForTimeout(3000);
+      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: navTimeout });
+      await page.waitForTimeout(5000);
 
       const mark = await page.evaluate((idx) => {
         const text = (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 8000);
@@ -78,7 +68,7 @@ const searchUrl = 'https://s.wanfangdata.com.cn/' + wfType + '?q=' + encodeURICo
         const header = ((headerEl && headerEl.innerText) || text.slice(0, 1200)).replace(/\s+/g, ' ');
         const logged = (/退出登录|退出|注销/.test(header) || /大学图书馆|图书馆/.test(header) || !/登录|注册/.test(header))
           && !/无权限|购买|充值/.test(text);
-        if (!logged) return { error: 'not logged in', warning: '未检测到登录态（可能是校园网IP认证，不影响使用），仍继续尝试下载' };
+        if (!logged) return { error: 'not logged in (trying anyway)' };
 
         const items = [];
         document.querySelectorAll('div.normal-list').forEach((el, i) => {
@@ -110,7 +100,7 @@ const searchUrl = 'https://s.wanfangdata.com.cn/' + wfType + '?q=' + encodeURICo
       await page.click('[data-target="wf-dl"]');
 
       let dlPage = null;
-      const deadline = Date.now() + 15000; while (Date.now() < deadline) {
+      for (let i = 0; i < 15; i++) {
         for (const p of context.pages()) {
           if (p !== page && p.url().includes('f.wanfangdata.com.cn')) { dlPage = p; break; }
         }
@@ -121,7 +111,7 @@ const searchUrl = 'https://s.wanfangdata.com.cn/' + wfType + '?q=' + encodeURICo
       if (dlPage) {
         await dlPage.bringToFront();
         await dlPage.waitForLoadState('domcontentloaded');
-        const dlDeadline = Date.now() + 30000; while (Date.now() < dlDeadline) {
+        for (let i = 0; i < 30; i++) {
           await page.waitForTimeout(1000);
           const txt = await dlPage.evaluate(() => (document.body?.innerText || '').replace(/\s+/g, ' '));
           if (txt.includes('点击此处')) {

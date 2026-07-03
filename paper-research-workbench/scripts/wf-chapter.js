@@ -4,14 +4,14 @@
  * Usage:
  *   node wf-chapter.js --q <keyword> [--idx <n>] [--page <n>]
  *                      [--expand <ch1,ch2>] [--check <sec1,sec2>]
- *                      [--save-as <path>] [--no-close]
+ *                      [--save-as <path>] [--timeout 120000] [--no-close]
  *
  * --q        : Search keyword (required)
  * --idx      : 0-based result index (default: 0)
  * --page     : Search result page (default: 1)
  * --expand   : Chapter titles to expand (comma-separated)
  * --check    : Subsection titles to check (comma-separated), or "auto:2" for first 2
- * --save-as  : Final download path (default: ~/Downloads/paper-research-workbench/<auto-name>)
+ * --save-as  : Final download path (default: .state/downloads/<auto-name>)
  * --no-close : Keep browser open
  *
  * Return: {status:"ok"|"error", download:{name,path,size}?, details:{tier,nodes,expanded,checked}}
@@ -33,9 +33,10 @@ const expandArg = opt('--expand', '');
 const checkArg = opt('--check', 'auto:2');
 const saveAs = opt('--save-as', '');
 const noClose = process.argv.includes('--no-close');
+const dlTimeout = parseInt(opt('--timeout', '120000'));
 
 if (!keyword) {
-  console.error('Usage: node wf-chapter.js --q <keyword> [--idx 0] [--expand ch1,ch2] [--check sec1,sec2|auto:N] [--save-as path] [--no-close]');
+  console.error('Usage: node wf-chapter.js --q <keyword> [--idx 0] [--expand ch1,ch2] [--check sec1,sec2|auto:N] [--save-as path] [--timeout 120000] [--no-close]');
   process.exit(1);
 }
 
@@ -47,11 +48,11 @@ const checkList = isAutoCheck ? [] : checkArg.split(',').map(s => s.trim()).filt
 const searchUrl = 'https://s.wanfangdata.com.cn/thesis?q=' + encodeURIComponent(keyword) + '&p=' + pageNum;
 
 (async () => {
-  const { browser, context, page } = await launch();
+  const { browser, context, page, goto } = await launch();
 
   // Download promise
   const dlResult = await new Promise(resolve => {
-    const t = setTimeout(() => resolve({ status: 'error', error: 'timeout' }), 120000);
+    const t = setTimeout(() => resolve({ status: 'error', error: 'timeout' }), dlTimeout);
 
     function listen(p) {
       p.on('download', async (dl) => {
@@ -81,8 +82,10 @@ const searchUrl = 'https://s.wanfangdata.com.cn/thesis?q=' + encodeURIComponent(
     // Main flow
     (async () => {
       // page already available from launch() — search + login + mark
-      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForTimeout(3000);
+      await goto(page, searchUrl, {
+        navTimeout: 60000,
+        waitFor: 'div.normal-list'
+      });
 
       const loginCheck = await page.evaluate(() => {
         const text = (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 8000);
@@ -144,7 +147,7 @@ const searchUrl = 'https://s.wanfangdata.com.cn/thesis?q=' + encodeURIComponent(
 
       // 4. Switch to chapter page
       let chPage = null;
-      for (let i = 0; i < 15; i++) {
+      let dlStart = Date.now(); while (Date.now() - dlStart < 20000) {
         for (const p of context.pages()) {
           if (p !== page && p.url().includes('part/thesis')) { chPage = p; break; }
         }
