@@ -69,8 +69,10 @@ const searchUrl = 'https://s.wanfangdata.com.cn/' + wfType + '?q=' + encodeURICo
     let _title = '';
 
     (async () => {
-      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForTimeout(3000);
+      await goto(page, searchUrl, {
+        navTimeout: parseInt(opt('--nav-timeout', '60000')),
+        waitFor: 'div.normal-list'
+      });
 
       const mark = await page.evaluate((idx) => {
         const text = (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 8000);
