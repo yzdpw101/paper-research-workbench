@@ -80,14 +80,11 @@ async function launch(options = {}) {
   };
 
   const saveState = async () => {
-    try {
-      const state = await context.storageState();
-      fs.writeFileSync(sf + '.tmp', JSON.stringify(state));
-      fs.renameSync(sf + '.tmp', sf);
-    } catch (_) {}
+    try { await context.storageState({ path: sf }); } catch (_) {}
   };
 
-  // Save on browser close and on signals (no timer — no focus stealing)
+  // Save on browser close, context close, and signals
+  context.on('close', () => saveState().catch(() => {}));
   const origClose = browser.close.bind(browser);
   browser.close = async () => { await saveState(); await origClose(); };
 
