@@ -7,7 +7,7 @@
  * Walks through: Node.js check → Playwright check → browser choice → browser install → verify.
  */
 
-const { BROWSER_FILE, DOWNLOAD_DIR } = require('./_browser');
+const { BROWSER_FILE=$BROWSER_FILE
 const fs = require('fs');
 const path = require('path');
 

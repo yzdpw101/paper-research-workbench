@@ -1,7 +1,8 @@
 /**
- * _browser.js — Multi-browser launcher with storageState persistence
+ * _browser.js — Multi-browser launcher
  *
- * Browser priority: --browser flag > .state/.browser file > "firefox"
+ * Browser priority: --browser flag > .state/.browser file
+ * No storageState persistence — campus IP auth doesn't need cookies.
  */
 
 const { firefox, chromium } = require('playwright');
@@ -24,12 +25,7 @@ function resolveBrowser() {
   throw new Error('No browser selected. Run: node scripts/set-browser.js <firefox|chrome|edge>, then re-run.');
 }
 
-function stateFile(browser) {
-  return path.join(STATE_DIR, 'storageState-' + browser + '.json');
-}
-
 function killZombies(name) {
-  // Skip if --no-kill is set (used when running multiple scripts in sequence)
   if (process.argv.includes('--no-kill')) return;
   try {
     if (name === 'firefox') execSync('taskkill /F /IM firefox.exe 2>nul', { stdio: 'ignore', timeout: 3000 });
@@ -42,6 +38,7 @@ async function launch(options = {}) {
   const browserName = resolveBrowser();
   const { viewport = { width: 1280, height: 900 }, acceptDownloads = true } = options;
 
+  killZombies(browserName);
 
   let browser;
   if (browserName === 'firefox') {
@@ -54,13 +51,7 @@ async function launch(options = {}) {
     throw new Error('Unknown browser: ' + browserName);
   }
 
-  const sf = stateFile(browserName);
-  let storageState = undefined;
-  if (fs.existsSync(sf)) {
-    try { storageState = JSON.parse(fs.readFileSync(sf, 'utf8')); } catch (_) {}
-  }
-
-  const context = await browser.newContext({ viewport, acceptDownloads, storageState });
+  const context = await browser.newContext({ viewport, acceptDownloads });
 
   [DEFAULT_DOWNLOAD_DIR, STATE_DIR].forEach(d => {
     if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
@@ -68,33 +59,18 @@ async function launch(options = {}) {
 
   const page = context.pages()[0] || await context.newPage();
 
-  // Unified page.goto with waitForSelector support
   const goto = async (pg, url, opts = {}) => {
     const { navTimeout = 60000, waitFor = '', waitMs = 0 } = opts;
     await pg.goto(url, { waitUntil: 'domcontentloaded', timeout: navTimeout });
     if (waitFor) {
       try {
         await pg.waitForSelector(waitFor, { timeout: Math.max(navTimeout - 5000, 10000) });
-      } catch (_) { /* selector not found — page may have loaded differently */ }
+      } catch (_) {}
     }
     if (waitMs > 0) await pg.waitForTimeout(waitMs);
   };
 
-  const saveState = async () => {
-    try { await context.storageState({ path: sf, indexedDB: true }); } catch (_) {}
-  };
-
-  // Save on browser disconnect (user closing window), browser close, and signals
-  browser.on('disconnected', () => saveState().then(() => process.exit(0)).catch(() => process.exit(0)));
-  context.on('close', () => saveState().catch(() => {}));
-  const origClose = browser.close.bind(browser);
-  browser.close = async () => { await saveState(); await origClose(); };
-
-  const cleanup = async () => { await saveState(); try { await browser.close(); } catch (_) {} process.exit(0); };
-  process.on('SIGINT', cleanup);
-  process.on('SIGTERM', cleanup);
-
   return { browser, context, page, browserName, goto };
 }
 
-module.exports = { launch, STATE_DIR, STATE_FILE: stateFile, BROWSER_FILE, DOWNLOAD_DIR: DEFAULT_DOWNLOAD_DIR, resolveBrowser };
+module.exports = { launch, BROWSER_FILE, DOWNLOAD_DIR: DEFAULT_DOWNLOAD_DIR, resolveBrowser };

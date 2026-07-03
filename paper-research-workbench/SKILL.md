@@ -84,7 +84,7 @@ Skill (SKILL.md + platform docs)
 - **Wanfang pagination**: URL `p=<N>` does NOT work (SPA resets to p=1). Use bottom-pagination clicks.
 - **Wanfang PDF**: 用 `wf-download.js --q "..." --type <type> --idx <n> --save-as <path>`。内置 thesis（新标签+倒计时+点击此处）vs periodical（直接下载）分流。
 - **Browser preflight**: `init.js` 幂等。`set-browser.js <browser>` 切换默认浏览器。`--browser <browser>` 临时覆盖。
-- **Serial execution**: 多篇论文批量操作时加 `--no-kill`，避免每个脚本互相杀死对方浏览器。
+- **Serial execution**: **不支持并行**。Firefox 同一时间只能一个实例。多篇论文必须串行执行，加 `--no-kill` 避免互相杀进程。
 - **Wanfang buttons**: Use `data-target` attribute bridge: evaluate marks exact button → run.js clicks `[data-target="wf-dl"]`. Thesis: 整篇下载 preferred; bare 下载 = login expired → 换一篇。
 - **Snapshots**: Prefer evaluate JSON on result pages (cheaper). `ref` 概念不适用（我们用文本 JSON 而非 accessibility tree）。
 - **Detail expiry**: If redirected to home after login, reopen saved detail URL.
